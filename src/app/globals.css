@@ -51,6 +51,11 @@
   * {
     border-color: var(--border);
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
@@ -63,6 +68,12 @@
     font-family: var(--font-display), serif;
     font-weight: 600;
     letter-spacing: -0.02em;
+  }
+
+  /* Keyboard accessibility focus styling */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 }
 
