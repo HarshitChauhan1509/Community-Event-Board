@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Calendar, MapPin, Bell, Check } from 'lucide-react';
+import { Calendar, MapPin, Bell, Check, AlertCircle } from 'lucide-react';
 import { formatEventDate, formatIndianPrice } from '@/lib/utils/format';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { Spinner } from '@/components/common/LoadingState';
 
 export interface EventItem {
   id: string;
@@ -35,6 +36,7 @@ export function EventCard({ event, onReminderToggle }: EventCardProps) {
   const [imgError, setImgError] = useState(false);
   const [isReminderSet, setIsReminderSet] = useState(Boolean(event.hasReminder));
   const [isTogglingReminder, setIsTogglingReminder] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleReminderClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -50,9 +52,10 @@ export function EventCard({ event, onReminderToggle }: EventCardProps) {
     const previousState = isReminderSet;
     const nextState = !previousState;
 
-    // Optimistic UI update
+    // 1. Immediate optimistic UI transition
     setIsReminderSet(nextState);
     setIsTogglingReminder(true);
+    setErrorMessage(null);
 
     try {
       if (onReminderToggle) {
@@ -62,20 +65,26 @@ export function EventCard({ event, onReminderToggle }: EventCardProps) {
           method: nextState ? 'POST' : 'DELETE',
         });
         if (!res.ok) {
-          throw new Error('Failed to update reminder');
+          throw new Error('Unable to save reminder');
         }
       }
-    } catch (err) {
-      // Revert optimistic state on failure
+    } catch (err: any) {
+      // 2. Revert optimistic state and present error message
       console.error('Reminder update error:', err);
       setIsReminderSet(previousState);
+      setErrorMessage(err.message || 'Unable to save reminder');
+
+      // Auto-clear error after 3.5 seconds
+      setTimeout(() => {
+        setErrorMessage(null);
+      }, 3500);
     } finally {
       setIsTogglingReminder(false);
     }
   };
 
   return (
-    <article className="group flex flex-col rounded-xl overflow-hidden border border-border bg-surface hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 shadow-sm hover:shadow-md">
+    <article className="group flex flex-col rounded-xl overflow-hidden border border-border bg-surface hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 shadow-sm hover:shadow-md relative">
       <Link href={`/events/${event.id}`} className="block relative aspect-[16/10] overflow-hidden bg-muted">
         {imgError ? (
           <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-800 text-muted-foreground p-4 text-center">
@@ -96,23 +105,34 @@ export function EventCard({ event, onReminderToggle }: EventCardProps) {
           {event.category}
         </div>
 
+        {/* Reminder Button */}
         <button
           onClick={handleReminderClick}
           disabled={isTogglingReminder}
-          title={isReminderSet ? 'Remove reminder' : 'Set reminder'}
-          aria-label={isReminderSet ? 'Remove reminder' : 'Set reminder'}
+          title={isReminderSet ? 'Reminder set' : 'Remind me'}
+          aria-label={isReminderSet ? 'Reminder set' : 'Remind me'}
           className={`absolute top-3 right-3 p-2.5 rounded-full backdrop-blur-md transition-all z-10 cursor-pointer shadow-sm ${
             isReminderSet
               ? 'bg-accent text-white border border-accent'
               : 'bg-surface/85 text-muted-foreground hover:text-foreground border border-border/50 hover:bg-surface'
           }`}
         >
-          {isReminderSet ? (
+          {isTogglingReminder ? (
+            <Spinner className="w-3.5 h-3.5" />
+          ) : isReminderSet ? (
             <Check className="w-3.5 h-3.5 stroke-[2.5]" />
           ) : (
             <Bell className="w-3.5 h-3.5" />
           )}
         </button>
+
+        {/* Inline Error Toast */}
+        {errorMessage && (
+          <div className="absolute bottom-3 inset-x-3 bg-red-600 text-white text-[11px] font-medium py-1.5 px-3 rounded-lg flex items-center justify-center gap-1.5 shadow-lg z-20 animate-in fade-in slide-in-from-bottom-2">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
       </Link>
 
       <div className="p-5 flex flex-col flex-1 justify-between gap-4">

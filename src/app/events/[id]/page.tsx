@@ -40,6 +40,7 @@ function EventDetailContent() {
   const [error, setError] = useState<string | null>(null);
   const [hasReminder, setHasReminder] = useState(false);
   const [isTogglingReminder, setIsTogglingReminder] = useState(false);
+  const [reminderError, setReminderError] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
@@ -80,9 +81,10 @@ function EventDetailContent() {
     const previousState = hasReminder;
     const nextState = !previousState;
 
-    // Optimistic UI update
+    // 1. Immediate optimistic UI update
     setHasReminder(nextState);
     setIsTogglingReminder(true);
+    setReminderError(null);
 
     try {
       const res = await fetch(`/api/events/${event.id}/reminder`, {
@@ -90,12 +92,14 @@ function EventDetailContent() {
       });
 
       if (!res.ok) {
-        throw new Error('Could not update reminder');
+        throw new Error('Unable to save reminder');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      // Revert optimistic state on failure
+      // 2. Revert optimistic state on failure
       setHasReminder(previousState);
+      setReminderError(err.message || 'Unable to save reminder');
+      setTimeout(() => setReminderError(null), 3500);
     } finally {
       setIsTogglingReminder(false);
     }
@@ -219,21 +223,33 @@ function EventDetailContent() {
                       : 'bg-primary text-primary-foreground hover:opacity-90'
                   }`}
                 >
-                  {hasReminder ? (
+                  {isTogglingReminder ? (
+                    <>
+                      <Spinner className="w-4 h-4" />
+                      Reminding...
+                    </>
+                  ) : hasReminder ? (
                     <>
                       <Check className="w-4 h-4 stroke-[2.5]" />
-                      Reminder Saved
+                      Reminder set
                     </>
                   ) : (
                     <>
                       <Bell className="w-4 h-4" />
-                      Remind Me
+                      Remind me
                     </>
                   )}
                 </button>
+
+                {reminderError && (
+                  <p className="text-xs text-red-600 dark:text-red-400 font-medium text-center mt-2.5">
+                    {reminderError}
+                  </p>
+                )}
+
                 <p className="text-[11px] text-muted-foreground text-center mt-2.5">
                   {hasReminder
-                    ? 'You will receive reminders on your dashboard for this event.'
+                    ? 'Reminder saved! You can view this on your personal feed.'
                     : 'Save this event to your personal reminders list.'}
                 </p>
               </div>
