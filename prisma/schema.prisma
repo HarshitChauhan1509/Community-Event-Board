@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String              @id @default(uuid())
+  email            String              @unique
+  password         String
+  name             String?
+  isAdmin          Boolean             @default(false)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  favourites       FavouriteCategory[]
+  reminders        Reminder[]
+  designs          EventCardDesign[]
+}
+
+model Category {
+  id               String              @id @default(uuid())
+  name             String              @unique
+  events           Event[]
+  favouritedBy     FavouriteCategory[]
+}
+
+model Event {
+  id               String              @id @default(uuid())
+  title            String
+  city             String
+  date             DateTime
+  time             String
+  price            Int
+  description      String
+  imageUrl         String
+  isActive         Boolean             @default(true)
+  categoryId       String
+  category         Category            @relation(fields: [categoryId], references: [id])
+  reminders        Reminder[]
+  designs          EventCardDesign[]
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+}
+
+model FavouriteCategory {
+  id               String              @id @default(uuid())
+  userId           String
+  categoryId       String
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category         Category            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt        DateTime            @default(now())
+
+  @@unique([userId, categoryId])
+}
+
+model Reminder {
+  id               String              @id @default(uuid())
+  userId           String
+  eventId          String
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event            Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt        DateTime            @default(now())
+
+  @@unique([userId, eventId])
+}
+
+model EventCardDesign {
+  id               String              @id @default(uuid())
+  userId           String
+  eventId          String
+  theme            String
+  stickers         String
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event            Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  updatedAt        DateTime            @updatedAt
+
+  @@unique([userId, eventId])
+}
