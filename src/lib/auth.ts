@@ -73,3 +73,16 @@ export async function getSessionUser(): Promise<{
     return null;
   }
 }
+
+export async function requireAdminSession(): Promise<{
+  id: string;
+  email: string;
+  name: string | null;
+  isAdmin: boolean;
+} | null> {
+  const user = await getSessionUser();
+  if (!user || !user.isAdmin) {
+    return null;
+  }
+  return user;
+}
