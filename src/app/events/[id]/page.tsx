@@ -8,6 +8,7 @@ import { formatEventDate, formatIndianPrice } from '@/lib/utils/format';
 import { useAuth } from '@/context/AuthContext';
 import { Spinner } from '@/components/common/LoadingState';
 import { ErrorState } from '@/components/common/ErrorState';
+import { EventCardDesigner } from '@/components/events/EventCardDesigner';
 
 interface EventDetails {
   id: string;
@@ -270,6 +271,9 @@ function EventDetailContent() {
             </div>
           </div>
         </div>
+
+        {/* Interactive Event Card Designer */}
+        <EventCardDesigner eventId={event.id} event={event} />
       </div>
     </div>
   );
