@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { AdminEventModal, AdminEventData } from './AdminEventModal';
 import { formatEventDate, formatIndianPrice } from '@/lib/utils/format';
 import { Spinner } from '@/components/common/LoadingState';
-import { Plus, Edit2, Calendar, MapPin, Power, Bell } from 'lucide-react';
+import { Plus, Edit2, Calendar, MapPin, Power } from 'lucide-react';
 
 interface CategoryOption {
   id: string;
@@ -136,7 +136,7 @@ export function AdminEventList() {
         </div>
       ) : events.length === 0 ? (
         <div className="py-16 text-center text-muted-foreground border border-dashed border-border rounded-xl">
-          No events created yet. Click "Add Event" to create the first one.
+          No events created yet. Click &ldquo;Add Event&rdquo; to create the first one.
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border bg-surface">

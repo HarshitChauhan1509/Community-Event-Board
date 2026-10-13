@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -43,6 +43,10 @@ model Event {
   designs          EventCardDesign[]
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
+
+  @@index([isActive, date])
+  @@index([city])
+  @@index([categoryId])
 }
 
 model FavouriteCategory {

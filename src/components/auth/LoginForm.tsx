@@ -88,7 +88,7 @@ export function LoginForm() {
       </form>
 
       <div className="mt-8 pt-6 border-t border-border text-center text-sm text-muted-foreground">
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <Link href="/signup" className="text-accent hover:underline font-medium">
           Create one now
         </Link>

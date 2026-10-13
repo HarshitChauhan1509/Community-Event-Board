@@ -22,7 +22,7 @@ async function main() {
 
   // 2. Create Admin User
   const adminPassword = await bcrypt.hash('admin123', 10);
-  const admin = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: 'admin@gather.com' },
     update: {},
     create: {
@@ -155,12 +155,12 @@ async function main() {
       categoryName: 'Kids',
     },
     {
-      title: 'Jazz & Blues Evening',
+      title: 'Jazz & Blues Night',
       city: 'Coimbatore',
       date: futureDate3,
       time: '8:00 PM',
       price: 1999,
-      description: 'Enjoy a relaxing evening with a premium jazz quartet.',
+      description: 'A magical night with a premium live jazz and blues quartet.',
       imageUrl: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=800&q=80',
       isActive: true,
       categoryName: 'Music',
@@ -216,17 +216,22 @@ async function main() {
     const category = categories.find(c => c.name === eventData.categoryName);
     if (!category) continue;
 
-    const { categoryName, ...data } = eventData;
-    
     // Check if exists to avoid duplicates on re-seed
     const existing = await prisma.event.findFirst({
-      where: { title: data.title, city: data.city }
+      where: { title: eventData.title, city: eventData.city }
     });
 
     if (!existing) {
       await prisma.event.create({
         data: {
-          ...data,
+          title: eventData.title,
+          city: eventData.city,
+          date: eventData.date,
+          time: eventData.time,
+          price: eventData.price,
+          description: eventData.description,
+          imageUrl: eventData.imageUrl,
+          isActive: eventData.isActive,
           categoryId: category.id,
         },
       });
@@ -234,7 +239,13 @@ async function main() {
     }
   }
   
-  console.log(`Created ${createdEvents} events.`);
+  // Clean up legacy event name if exists
+  await prisma.event.deleteMany({
+    where: { title: 'Jazz & Blues Evening' }
+  });
+
+  const totalCount = await prisma.event.count();
+  console.log(`Created ${createdEvents} new events. Total events in DB: ${totalCount}`);
   console.log('Seeding complete.');
 }
 

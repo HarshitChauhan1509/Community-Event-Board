@@ -135,7 +135,7 @@ export function EventFilters({
           )}
           {searchQuery.trim().length > 0 && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-muted border border-border text-foreground font-medium">
-              Search: "{searchQuery}"
+              Search: &ldquo;{searchQuery}&rdquo;
               <button onClick={() => onSearchChange('')} className="hover:text-red-500 ml-0.5 cursor-pointer">
                 <X className="w-3 h-3" />
               </button>
